@@ -24,7 +24,6 @@ func main() {
 	configFile, configDir := parseCliFlags()
 	loadConfiguration(configFile, configDir)
 
-	log.Info("Loading aggregates")
 	// bind aggregates here
 }
 

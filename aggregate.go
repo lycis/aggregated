@@ -19,7 +19,13 @@ type Aggregate struct {
 	Name string
 	Type string
 	Args interface{}
-	Operation string
+	OperationId string
+	Extractor extraction
+}
+
+// Sets Extractor and Operation function
+func (aggregate *Aggregate) Prepare() {
+	
 }
 
 // Builds an aggregate from its definition out of the config file
@@ -56,7 +62,7 @@ func buildAggregateFromDefinition(id string, i interface{}) Aggregate {
 		if !ok {
 			panicAggregateError(id, "operation is not a string")
 		}
-		aggregate.Operation = operation
+		aggregate.OperationId = operation
 	}
 	
 	return aggregate

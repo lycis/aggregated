@@ -79,12 +79,20 @@ func parseAggregates(y YamlContent) map[string]Aggregate {
 		}()
 		
 		if name != "aggregated" {
-			aggregates[name] = buildAggregateFromDefinition(name, def)
+			log.WithField("id", name).Debug("Processing aggregate definition")
+			aggregate := buildAggregateFromDefinition(name, def)
+			log.WithField("id", name).Debug("Definition processed.")
+			
+			log.WithField("id", name).Debug("Preparing aggregate")
+			aggregate.Prepare()
+			log.WithField("id", name).Debug("Aggregate prepared")
+			
 			log.WithFields(log.Fields {
 					"id": name,
-					"name": aggregates[name].Name,
-					"type": aggregates[name].Type,
+					"name": aggregate.Name,
+					"type": aggregate.Type,
 			}).Info("Discovered aggregate")
+			aggregates[name] = aggregate
 		}
 	}
 	return aggregates
@@ -122,7 +130,7 @@ func mergeConfigFiles(configDir string) string {
 	var overallContent []byte
 	for _, file := range files {
 		filePath := fmt.Sprintf("%s/%s", configDir, file.Name())
-		log.WithField("file", filePath).Info("Loading configuraion from file")
+		log.WithField("file", filePath).Info("Mergeing configuraion from file")
 		content, err := ioutil.ReadFile(filePath)
 		if err != nil {
 			panic(err)
