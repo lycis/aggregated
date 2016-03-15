@@ -12,6 +12,7 @@ type HttpExtraction struct {
 	Url string
 }
 
-func (e HttpExtraction) Extract() {
+func (e HttpExtraction) Extract() string {
 	log.Debug("http extraction")
+	return ""
 }

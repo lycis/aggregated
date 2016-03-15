@@ -74,7 +74,7 @@ func parseAggregates(y YamlContent) map[string]Aggregate {
 	for name, def := range y {
 		defer func() {
 			if r := recover(); r != nil {
-				log.WithError(r.(error)).Error("Aggregate definition error")
+				log.WithError(r.(error)).WithField("id", name).Error("Aggregate definition error")
 			}	
 		}()
 		
@@ -139,15 +139,12 @@ func mergeConfigFiles(configDir string) string {
 	}
 
 	tempFile, err := ioutil.TempFile(".", "aggregated_tmp_config")
+	defer tempFile.Close()
 	if err != nil {
 		panic(err)
 	}
 	
 	if err := ioutil.WriteFile(tempFile.Name(), overallContent, 0666); err != nil {
-		panic(err)
-	}
-	
-	if err := tempFile.Close(); err != nil {
 		panic(err)
 	}
 	
