@@ -1,14 +1,12 @@
-package main
+package extraction
 
 import (
 	log "github.com/Sirupsen/logrus"
 )
 
-type extraction interface {
-	Extract() string
-}
-
+// extraction for type 'http'
 type HttpExtraction struct {
+	// URL of the target endpoint
 	Url string
 }
 

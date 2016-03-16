@@ -6,6 +6,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
+	"github.com/lycis/aggregated/aggregate"
 )
 
 // This contains the definition of the aggregated service.
@@ -51,7 +52,7 @@ func loadYamlIntoMap(file string) YamlContent {
 }
 
 // Loads the configuration from a YAML file
-func (s ServiceDefinition) FromFile(configFile string) (ServiceDefinition, map[string]Aggregate) {
+func (s ServiceDefinition) FromFile(configFile string) (ServiceDefinition, map[string]aggregate.Aggregate) {
 	log.WithField("file", configFile).Info("Parsing configuration")
 	y := loadYamlIntoMap(configFile)
 
@@ -68,8 +69,8 @@ func (s ServiceDefinition) FromFile(configFile string) (ServiceDefinition, map[s
 }
 
 // Parse the configuration for Aggregate definitions
-func parseAggregates(y YamlContent) map[string]Aggregate {
-	aggregates := make(map[string]Aggregate)
+func parseAggregates(y YamlContent) map[string]aggregate.Aggregate {
+	aggregates := make(map[string]aggregate.Aggregate)
 	
 	for name, def := range y {
 		defer func() {
@@ -80,11 +81,11 @@ func parseAggregates(y YamlContent) map[string]Aggregate {
 		
 		if name != "aggregated" {
 			log.WithField("id", name).Debug("Processing aggregate definition")
-			aggregate := buildAggregateFromDefinition(name, def)
+			aggregate := aggregate.BuildAggregateFromDefinition(name, def)
 			log.WithField("id", name).Debug("Definition processed.")
 			
 			log.WithField("id", name).Debug("Preparing aggregate")
-			aggregate.Prepare()
+			aggregate.UpdateExtractor()
 			log.WithField("id", name).Debug("Aggregate prepared")
 			
 			log.WithFields(log.Fields {
@@ -102,7 +103,7 @@ func parseAggregates(y YamlContent) map[string]Aggregate {
 // files.
 // This is done by merging all files into a single temporary config file and
 // loading it via LoadFile
-func (c ServiceDefinition) FromDirectory(configDir string) (ServiceDefinition, map[string]Aggregate) {
+func (c ServiceDefinition) FromDirectory(configDir string) (ServiceDefinition, map[string]aggregate.Aggregate) {
 	tempFile := mergeConfigFiles(configDir)
 	sd, aggregates := c.FromFile(tempFile)
 	if err := os.Remove(tempFile); err != nil {

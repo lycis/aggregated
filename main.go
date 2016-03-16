@@ -4,6 +4,7 @@ import (
 	"flag"
 	log "github.com/Sirupsen/logrus"
 	"os"
+	"github.com/lycis/aggregated/aggregate"
 )
 
 // service configuration
@@ -11,7 +12,7 @@ var config ServiceDefinition
 
 // all defined aggregates
 // id -> Aggregate
-var aggregates map[string]Aggregate
+var aggregates map[string]aggregate.Aggregate
 
 // Main routine
 func main() {
