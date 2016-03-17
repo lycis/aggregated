@@ -82,6 +82,7 @@ func parseAggregates(y YamlContent) map[string]aggregate.Aggregate {
 		if name != "aggregated" {
 			log.WithField("id", name).Debug("Processing aggregate definition")
 			aggregate := aggregate.BuildAggregateFromDefinition(name, def)
+			aggregate.Id = name
 			log.WithField("id", name).Debug("Definition processed.")
 			
 			log.WithField("id", name).Debug("Preparing aggregate")

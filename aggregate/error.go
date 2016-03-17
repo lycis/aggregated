@@ -20,3 +20,7 @@ func panicAggregateError(id, message string, inserts ...interface{}) {
 	})
 }
 
+func panicParameterError(id, t string) {
+	panic(&AggregateDefinitionError{fmt.Sprintf("%s: invalid definition of parameters for type '%s'", id, t)})
+}
+

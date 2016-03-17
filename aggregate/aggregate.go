@@ -16,6 +16,7 @@ import (
 //       url: http://example.com/foobar
 //
 type Aggregate struct {
+	Id          string
 	Name        string
 	Type        string
 	Args        interface{}
@@ -29,7 +30,9 @@ func (aggregate *Aggregate) UpdateExtractor() {
 	case "http":
 		aggregate.applyHttpExtractor()
 	case "aggregate":
-		//aggregate.applyAggregateExtractor()
+		aggregate.applyAggregateExtractor()
+	case "auto":
+		aggregate.applyAutoExtractor()
 	default:
 		panic(&AggregateDefinitionError{"unsupported type"})
 	}
@@ -39,7 +42,7 @@ func (aggregate *Aggregate) UpdateExtractor() {
 func (aggregate *Aggregate) applyHttpExtractor() {
 	parameters, ok := aggregate.Args.(map[interface{}]interface{})
 	if !ok {
-		panic(&AggregateDefinitionError{"invalid definition of parameters for type 'http'"})
+		panicParameterError(aggregate.Id, "http")
 	}
 
 	extractor := extraction.HttpExtraction{
@@ -47,4 +50,27 @@ func (aggregate *Aggregate) applyHttpExtractor() {
 	}
 
 	aggregate.Extractor = extractor
+}
+
+func (a *Aggregate) applyAggregateExtractor() {
+	parameters, ok := a.Args.([]interface{})
+	if !ok {
+		panicParameterError(a.Id, "aggregate")
+	}
+
+	var extractor extraction.AggregateExtraction
+	for _, sub := range parameters {
+		typedSub, ok := sub.(string)
+		if !ok {
+			panicParameterError(a.Id, "aggregate")
+		}
+		extractor.Ids = append(extractor.Ids, typedSub)
+	}
+
+	a.Extractor = extractor
+}
+
+func (a *Aggregate) applyAutoExtractor() {
+	extractor := extraction.AutoExtraction{a.Id}
+	a.Extractor = extractor
 }

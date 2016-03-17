@@ -6,7 +6,8 @@ import (
 
 // extraction for type 'aggregate'
 type AggregateExtraction struct {
-	SubAggregateIds []string
+	// Ids of collected sub aggregates
+	Ids []string
 }
 
 func (e AggregateExtraction) Extract() string {
