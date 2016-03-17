@@ -1,4 +1,4 @@
-package main
+package configuration
 
 import (
 	log "github.com/Sirupsen/logrus"
@@ -19,11 +19,11 @@ type YamlContent map[string]interface{}
 
 // Gives the ServiceDefinition that is represented in this YAML content.
 // May also return nil if there is no service definition present.
-func (y YamlContent) ServiceDefintion() (*ServiceDefinition) {
+func (y YamlContent) ServiceDefintion() *ServiceDefinition {
 	if _, ok := y["aggregated"]; !ok {
 		return nil
 	}
-	
+
 	var def ServiceDefinition
 	m := y["aggregated"].(map[interface{}]interface{})
 	bind, exists := m["bind"].(string)
@@ -32,7 +32,7 @@ func (y YamlContent) ServiceDefintion() (*ServiceDefinition) {
 	} else {
 		def.Bind = ""
 	}
-	
+
 	logConfig, ok := m["log"].(map[interface{}]interface{})
 	if ok {
 		level, exists := logConfig["level"].(string)
@@ -43,11 +43,12 @@ func (y YamlContent) ServiceDefintion() (*ServiceDefinition) {
 		}
 		setLogLevel(level)
 	}
-	
-	return &def 
+
+	return &def
 }
+
 // Adapt the log level
-func setLogLevel(level string) {	
+func setLogLevel(level string) {
 	switch level {
 	case "debug":
 		log.SetLevel(log.DebugLevel)

@@ -3,8 +3,9 @@ package main
 import (
 	"flag"
 	log "github.com/Sirupsen/logrus"
-	"os"
 	"github.com/lycis/aggregated/aggregate"
+	"github.com/lycis/aggregated/configuration"
+	"os"
 )
 
 // service configuration
@@ -12,7 +13,7 @@ var config ServiceDefinition
 
 // all defined aggregates
 // id -> Aggregate
-var aggregates map[string]aggregate.Aggregate
+var aggregates map[string]aggregate.AggregateF
 
 // Main routine
 func main() {
@@ -49,10 +50,10 @@ func loadConfiguration(configFile string, configDir string) {
 		log.WithFields(log.Fields{
 			"file": configFile,
 		}).Info("Loading configuration from file")
-		config, aggregates = config.FromFile(configFile)
+		config = configuration.FromFile(configFile)
 	} else if configDir != "" {
 		log.WithField("directory", configDir).Infof("Loading configuration from directory")
-		config, aggregates = config.FromDirectory(configDir)
+		config = configuration.FromDirectory(configDir)
 	} else {
 		log.Fatal("No configuration source provided.")
 		os.Exit(1)

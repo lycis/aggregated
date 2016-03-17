@@ -1,8 +1,12 @@
 package aggregate
 
 import (
+	log "github.com/Sirupsen/logrus"
+	"github.com/lycis/aggregated/configuration"
 	"github.com/lycis/aggregated/extraction"
 )
+
+var loadedAggregates map[string]*Aggregate
 
 // An Aggregate contains all the information necessary to
 // evaluate its value. This element represents one aggregate
@@ -73,4 +77,47 @@ func (a *Aggregate) applyAggregateExtractor() {
 func (a *Aggregate) applyAutoExtractor() {
 	extractor := extraction.AutoExtraction{a.Id}
 	a.Extractor = extractor
+}
+
+// Parse the configuration for Aggregate definitions
+func LoadAggregates(y YamlContent) {
+	aggregates := make(map[string]*Aggregate)
+
+	for name, def := range y {
+		defer func() {
+			if r := recover(); r != nil {
+				log.WithError(r.(error)).WithField("id", name).Error("Aggregate definition error")
+			}
+		}()
+
+		if name != "aggregated" {
+			log.WithField("id", name).Debug("Processing aggregate definition")
+			aggregate := BuildAggregateFromDefinition(name, def)
+			aggregate.Id = name
+			log.WithField("id", name).Debug("Definition processed.")
+
+			log.WithField("id", name).Debug("Preparing aggregate")
+			aggregate.UpdateExtractor()
+			log.WithField("id", name).Debug("Aggregate prepared")
+
+			log.WithFields(log.Fields{
+				"id":   name,
+				"name": aggregate.Name,
+				"type": aggregate.Type,
+			}).Info("Discovered aggregate")
+			aggregates[name] = &aggregate
+		}
+	}
+
+	loadedAggregates = aggregates
+}
+
+// Returns the aggregate with the given id if it can be found.
+// If not nil will be returned
+func GetAggregate(id string) *Aggregate {
+	a, ok := loadedAggregates[id]
+	if !ok {
+		return nil
+	}
+	return a
 }
