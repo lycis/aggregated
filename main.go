@@ -61,5 +61,6 @@ func loadConfiguration(configFile string, configDir string) {
 	}
 
 	config = content.ServiceDefintion()
-	aggregate.LoadAggregates(content)
+	numLoaded := aggregate.LoadAggregates(content)
+	log.WithField("count", numLoaded).Info("All aggregates loaded.")
 }

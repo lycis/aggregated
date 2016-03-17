@@ -80,7 +80,8 @@ func (a *Aggregate) applyAutoExtractor() {
 }
 
 // Parse the configuration for Aggregate definitions
-func LoadAggregates(y configuration.YamlContent) {
+// returns the number of loaded aggregates
+func LoadAggregates(y configuration.YamlContent) int {
 	aggregates := make(map[string]*Aggregate)
 
 	for name, def := range y {
@@ -110,6 +111,7 @@ func LoadAggregates(y configuration.YamlContent) {
 	}
 
 	loadedAggregates = aggregates
+	return len(loadedAggregates)
 }
 
 // Returns the aggregate with the given id if it can be found.
