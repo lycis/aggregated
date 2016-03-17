@@ -2,9 +2,11 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/lycis/aggregated/aggregate"
 	"github.com/lycis/aggregated/configuration"
+	"net/http"
 	"os"
 )
 
@@ -25,8 +27,8 @@ func main() {
 
 	configFile, configDir := parseCliFlags()
 	loadConfiguration(configFile, configDir)
-
-	// bind aggregates here
+	bindForAggregates()
+	startHttpServer()
 }
 
 // Parses the cli options and returns its parameters
@@ -63,4 +65,22 @@ func loadConfiguration(configFile string, configDir string) {
 	config = content.ServiceDefintion()
 	numLoaded := aggregate.LoadAggregates(content)
 	log.WithField("count", numLoaded).Info("All aggregates loaded.")
+}
+
+func bindForAggregates() {
+	for _, a := range aggregate.Aggregates() {
+		resource := fmt.Sprintf("/%s", a.Id)
+		log.WithField("resource", resource).Debug("Registering resource for aggregate")
+		http.HandleFunc(resource, HandleGetAggregateValue)
+	}
+}
+
+func startHttpServer() {
+	log.WithField("bind", config.Bind).Info("Serving http://")
+	err := http.ListenAndServe(config.Bind, nil)
+	if err != nil {
+		log.WithError(err).Fatal("Faild to serve")
+	} else {
+		log.Info("Stop serving http://")
+	}
 }

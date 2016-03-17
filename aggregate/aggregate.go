@@ -123,3 +123,12 @@ func GetAggregate(id string) *Aggregate {
 	}
 	return a
 }
+
+// Returns a list of all loaded aggregates
+func Aggregates() []*Aggregate {
+	list := make([]*Aggregate, 0)
+	for _, a := range loadedAggregates {
+		list = append(list, a)
+	}
+	return list
+}
