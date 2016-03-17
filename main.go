@@ -9,11 +9,11 @@ import (
 )
 
 // service configuration
-var config ServiceDefinition
+var config *configuration.ServiceDefinition
 
 // all defined aggregates
 // id -> Aggregate
-var aggregates map[string]aggregate.AggregateF
+var aggregates map[string]aggregate.Aggregate
 
 // Main routine
 func main() {
@@ -46,16 +46,20 @@ func loadConfiguration(configFile string, configDir string) {
 		os.Exit(1)
 	}
 
+	var content configuration.YamlContent
 	if configFile != "" {
 		log.WithFields(log.Fields{
 			"file": configFile,
 		}).Info("Loading configuration from file")
-		config = configuration.FromFile(configFile)
+		content = configuration.FromFile(configFile)
 	} else if configDir != "" {
 		log.WithField("directory", configDir).Infof("Loading configuration from directory")
-		config = configuration.FromDirectory(configDir)
+		content = configuration.FromDirectory(configDir)
 	} else {
 		log.Fatal("No configuration source provided.")
 		os.Exit(1)
 	}
+
+	config = content.ServiceDefintion()
+	aggregate.LoadAggregates(content)
 }

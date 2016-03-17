@@ -80,7 +80,7 @@ func (a *Aggregate) applyAutoExtractor() {
 }
 
 // Parse the configuration for Aggregate definitions
-func LoadAggregates(y YamlContent) {
+func LoadAggregates(y configuration.YamlContent) {
 	aggregates := make(map[string]*Aggregate)
 
 	for name, def := range y {
