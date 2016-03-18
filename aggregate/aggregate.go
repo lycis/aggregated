@@ -117,11 +117,14 @@ func (a Aggregate) Value() (string, error) {
 		if err != nil {
 			return "", err
 		}
+		log.WithFields(log.Fields{"aggregate-id": id, "value": v}).Info("Evaluated dependency value")
 
 		valueCache[id] = v
 	}
 
 	value := a.Extractor.Extract()
+	log.WithFields(log.Fields{"aggregate-id": a.Id, "value": value}).Info("Evaluated own value")
+	
 	// TODO apply operation
 	return value, nil
 }
