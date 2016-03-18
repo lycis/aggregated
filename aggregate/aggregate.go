@@ -117,7 +117,7 @@ func (a Aggregate) Value() (string, error) {
 		if err != nil {
 			return "", err
 		}
-		log.WithFields(log.Fields{"aggregate-id": id, "value": v}).Info("Evaluated dependency value")
+		log.WithFields(log.Fields{"aggregate-id": a.Id, "dependency-id": id, "value": v}).Info("Evaluated dependency value")
 
 		valueCache[id] = v
 	}
