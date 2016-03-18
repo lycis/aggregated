@@ -26,39 +26,38 @@ func HandleGetAggregateValue(response http.ResponseWriter, request *http.Request
 	a := aggregate.GetAggregate(id)
 	if a == nil {
 		log.WithFields(log.Fields{
-				"host": request.Host,
-				"aggregate-id": id,
+			"host":         request.Host,
+			"aggregate-id": id,
 		}).Info("http: Requested undefined aggregate")
 		http.NotFound(response, request)
 		return
 	}
-	
-	log.WithFields(log.Fields {
-			"host": request.Host,
-			"aggregate-id": a.Id,
-		}).Info("http: Aggregate value requested")
 
-	
+	log.WithFields(log.Fields{
+		"host":         request.Host,
+		"aggregate-id": a.Id,
+	}).Info("http: Aggregate value requested")
+
 	v := AggregateValue{
 		Name:  a.Name,
-		Value: a.GetValue(),
+		Value: a.Value(),
 	}
-	
+
 	asJson, err := json.MarshalIndent(&v, "", "  ")
 	if err != nil {
-		log.WithFields(log.Fields {
-				"host": request.Host,
-				"aggregate-id": a.Id,
-				"error": err.Error(),
-			}).Error("Failed to marshal JSON response")
+		log.WithFields(log.Fields{
+			"host":         request.Host,
+			"aggregate-id": a.Id,
+			"error":        err.Error(),
+		}).Error("Failed to marshal JSON response")
 		http.Error(response, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	
-	log.WithFields(log.Fields {
-			"host": request.Host,
-			"aggregate-id": a.Id,
-			"response": string(asJson),
-		}).Info("JSON response served")
+
+	log.WithFields(log.Fields{
+		"host":         request.Host,
+		"aggregate-id": a.Id,
+		"response":     string(asJson),
+	}).Info("JSON response served")
 	fmt.Fprint(response, string(asJson))
 }

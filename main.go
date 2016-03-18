@@ -79,7 +79,7 @@ func startHttpServer() {
 	log.WithField("bind", config.Bind).Info("Serving http://")
 	err := http.ListenAndServe(config.Bind, nil)
 	if err != nil {
-		log.WithError(err).Fatal("Faild to serve")
+		log.WithError(err).Fatal("Failed to serve")
 	} else {
 		log.Info("Stop serving http://")
 	}

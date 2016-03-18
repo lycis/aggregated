@@ -81,7 +81,7 @@ func (a *Aggregate) applyAutoExtractor() {
 
 // Executes the defined aggregation and returns the
 // aggregated (duh!) value.
-func (a Aggregate) GetValue() string {
+func (a Aggregate) Value() string {
 	value := a.Extractor.Extract()
 	// TODO apply operation
 	return value
