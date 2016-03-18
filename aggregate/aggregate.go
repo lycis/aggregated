@@ -79,6 +79,14 @@ func (a *Aggregate) applyAutoExtractor() {
 	a.Extractor = extractor
 }
 
+// Executes the defined aggregation and returns the
+// aggregated (duh!) value.
+func (a Aggregate) GetValue() string {
+	value := a.Extractor.Extract()
+	// TODO apply operation
+	return value
+}
+
 // Parse the configuration for Aggregate definitions
 // returns the number of loaded aggregates
 func LoadAggregates(y configuration.YamlContent) int {
