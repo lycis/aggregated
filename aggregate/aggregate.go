@@ -1,7 +1,9 @@
 package aggregate
 
 import (
+	"fmt"
 	log "github.com/Sirupsen/logrus"
+	"github.com/gyuho/goraph/graph"
 	"github.com/lycis/aggregated/configuration"
 	"github.com/lycis/aggregated/extraction"
 )
@@ -20,12 +22,17 @@ var loadedAggregates map[string]*Aggregate
 //       url: http://example.com/foobar
 //
 type Aggregate struct {
-	Id          string
-	Name        string
-	Type        string
-	Args        interface{}
-	OperationId string
-	Extractor   extraction.Extraction
+	Id           string
+	Name         string
+	Type         string
+	Args         interface{}
+	OperationId  string
+	Extractor    extraction.Extraction
+	dependencies []string
+}
+
+func (a Aggregate) Dependencies() []string {
+	return a.dependencies
 }
 
 // Sets Extractor function
@@ -69,9 +76,11 @@ func (a *Aggregate) applyAggregateExtractor() {
 			panicParameterError(a.Id, "aggregate")
 		}
 		extractor.Ids = append(extractor.Ids, typedSub)
+		a.dependencies = append(a.dependencies, typedSub)
 	}
 
 	a.Extractor = extractor
+	log.WithField("count", len(a.dependencies)).Debug("Dependencies added.")
 }
 
 func (a *Aggregate) applyAutoExtractor() {
@@ -81,10 +90,67 @@ func (a *Aggregate) applyAutoExtractor() {
 
 // Executes the defined aggregation and returns the
 // aggregated (duh!) value.
-func (a Aggregate) Value() string {
+func (a Aggregate) Value() (string, error) {
+
+	// get order of calls
+	dependencyGraph, err := a.calculateDependencyGraph()
+	if err != nil {
+		return "", nil
+	}
+
+	order, ok := graph.TopologicalSort(dependencyGraph)
+	log.WithField("ok", ok).Debug("Toplogical sort of dependency graph performed")
+	if !ok {
+		log.WithField("aggregate-id", a.Id).Error("Loop in dependencies detected.")
+		return "", AggregateEvaluationError{"loop in dependencies"}
+	}
+
+	// resolve dependency values
+	valueCache := make(map[string]string)
+	for _, id := range order {
+		dependency := GetAggregate(id)
+		if dependency == nil {
+			return "", AggregateEvaluationError{fmt.Sprintf("dependency '%s' not defined")}
+		}
+
+		v, err := dependency.Value()
+		if err != nil {
+			return "", err
+		}
+
+		valueCache[id] = v
+	}
+
 	value := a.Extractor.Extract()
 	// TODO apply operation
-	return value
+	return value, nil
+}
+
+func (a Aggregate) calculateDependencyGraph() (graph.Graph, error) {
+	dependencyGraph := graph.NewDefaultGraph()
+	if err := addDependenciesToGraph(a, dependencyGraph); err != nil {
+		return nil, err
+	}
+
+	return dependencyGraph, nil
+}
+
+func addDependenciesToGraph(a Aggregate, g graph.Graph) error {
+	log.WithFields(log.Fields{"aggregate-id": a.Id, "depdencies": len(a.Dependencies())}).Debug("calculating dependencies")
+	for _, dependId := range a.Dependencies() {
+		log.WithFields(log.Fields{"aggregate-id": a.Id, "dependency-id": dependId}).Debug("dependency found")
+		if !g.FindVertex(dependId) {
+			log.WithField("vertex", dependId).Debug("vertex added")
+			g.AddVertex(dependId)
+		}
+
+		// add connection between dependencies
+		g.AddEdge(dependId, a.Id, 0)
+		dependencyAggregate := GetAggregate(dependId)
+		addDependenciesToGraph(*dependencyAggregate, g)
+	}
+
+	return nil
 }
 
 // Parse the configuration for Aggregate definitions
@@ -107,7 +173,7 @@ func LoadAggregates(y configuration.YamlContent) int {
 
 			log.WithField("id", name).Debug("Preparing aggregate")
 			aggregate.UpdateExtractor()
-			log.WithField("id", name).Debug("Aggregate prepared")
+			log.WithFields(log.Fields{"id": name, "dependencies": len(aggregate.Dependencies())}).Debug("Aggregate prepared")
 
 			log.WithFields(log.Fields{
 				"id":   name,

@@ -38,9 +38,14 @@ func HandleGetAggregateValue(response http.ResponseWriter, request *http.Request
 		"aggregate-id": a.Id,
 	}).Info("http: Aggregate value requested")
 
+	value, err := a.Value()
+	if err != nil {
+		http.Error(response, err.Error(), http.StatusInternalServerError)
+	}
+
 	v := AggregateValue{
 		Name:  a.Name,
-		Value: a.Value(),
+		Value: value,
 	}
 
 	asJson, err := json.MarshalIndent(&v, "", "  ")
