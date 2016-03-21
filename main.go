@@ -13,10 +13,6 @@ import (
 // service configuration
 var config *configuration.ServiceDefinition
 
-// all defined aggregates
-// id -> Aggregate
-var aggregates map[string]aggregate.Aggregate
-
 // Main routine
 func main() {
 	defer func() {

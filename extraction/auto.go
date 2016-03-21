@@ -19,5 +19,6 @@ func (e AutoExtraction) Extract(valueCache map[string]string) string {
 			value += ", " + v 
 		}
 	}
+	log.Debugf("auto := %s", value)
 	return value
 }
