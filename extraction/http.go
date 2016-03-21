@@ -10,7 +10,7 @@ type HttpExtraction struct {
 	Url string
 }
 
-func (e HttpExtraction) Extract() string {
+func (e HttpExtraction) Extract(valueCache map[string]string) string {
 	log.Debug("http extraction")
 	return ""
 }

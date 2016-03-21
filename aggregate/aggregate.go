@@ -6,6 +6,7 @@ import (
 	"github.com/gyuho/goraph/graph"
 	"github.com/lycis/aggregated/configuration"
 	"github.com/lycis/aggregated/extraction"
+	"strings"
 )
 
 var loadedAggregates map[string]*Aggregate
@@ -32,6 +33,18 @@ type Aggregate struct {
 }
 
 func (a Aggregate) Dependencies() []string {
+	if a.Type == "auto" {
+		log.Debug("Resolving dependencies for 'auto' extraction")
+		var d []string
+		for k,_ := range loadedAggregates {
+			log.WithFields(log.Fields{"aggregate-id": a.Id, "loaded-id": k}).Debug("Checking previously loaded aggregate")
+			if strings.HasPrefix(k, a.Id) && k != a.Id { 
+				d = append(d, k)
+			}
+		}
+		return d
+	}
+	
 	return a.dependencies
 }
 
@@ -44,9 +57,25 @@ func (aggregate *Aggregate) UpdateExtractor() {
 		aggregate.applyAggregateExtractor()
 	case "auto":
 		aggregate.applyAutoExtractor()
+	case "static":
+		aggregate.applyStaticExtractor()
 	default:
 		panic(&AggregateDefinitionError{"unsupported type"})
 	}
+}
+
+// applies a static extractor to the aggregate
+func (a *Aggregate) applyStaticExtractor() {
+	value, ok := a.Args.(string)
+	if !ok {
+		panicParameterError(a.Id, "static")
+	}
+
+	extractor := extraction.StaticExtraction{
+		Value: value,
+	}
+
+	a.Extractor = extractor
 }
 
 // applies an HTTP Extractor to the given aggregate
@@ -122,9 +151,9 @@ func (a Aggregate) Value() (string, error) {
 		valueCache[id] = v
 	}
 
-	value := a.Extractor.Extract()
+	value := a.Extractor.Extract(valueCache)
 	log.WithFields(log.Fields{"aggregate-id": a.Id, "value": value}).Info("Evaluated own value")
-	
+
 	// TODO apply operation
 	return value, nil
 }
