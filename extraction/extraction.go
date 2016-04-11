@@ -1,8 +1,22 @@
 package extraction
 
+import (
+	"fmt"
+)
+
+func init() {
+	registeredExtractions = make(map[string]ExtractionConstructor)
+	Register("aggregate", createAggregateExtraction)
+}
+
 // General inerface for value extractions
 type Extraction interface {
+	// Executes the extraction and calculates its value
 	Extract(valueCache map[string]string) string
+	
+	// Returns a list of dependencies that are injected
+	// into the aggregate by this extraction.
+	Dependencies() []string
 }
 
 // A extraction constructor takes an interface as argument. 
@@ -10,7 +24,7 @@ type Extraction interface {
 // return a Extraction instance.
 // Args are the values defined in the 'args' element of the aggregate
 // definition.
-type ExtractionConstructor func(args interface{})Extraction
+type ExtractionConstructor func(id string, args interface{})Extraction
 
 var registeredExtractions map[string]ExtractionConstructor
 
@@ -29,4 +43,16 @@ func Get(name string) ExtractionConstructor {
 	}
 	
 	return constructor
+}
+
+type ParameterError struct {
+	Message string
+}
+
+func (e ParameterError) Error() string {
+	return e.Message
+}
+
+func panicParameterError(id, t string) {
+	panic(&ParameterError{fmt.Sprintf("%s: invalid definition of parameters for type '%s'", id, t)})
 }

@@ -36,15 +36,15 @@ func (a Aggregate) Dependencies() []string {
 	if a.Type == "auto" {
 		log.Debug("Resolving dependencies for 'auto' extraction")
 		var d []string
-		for k,_ := range loadedAggregates {
+		for k, _ := range loadedAggregates {
 			log.WithFields(log.Fields{"aggregate-id": a.Id, "loaded-id": k}).Debug("Checking previously loaded aggregate")
-			if strings.HasPrefix(k, a.Id) && k != a.Id { 
+			if strings.HasPrefix(k, a.Id) && k != a.Id {
 				d = append(d, k)
 			}
 		}
 		return d
 	}
-	
+
 	return a.dependencies
 }
 
@@ -54,8 +54,13 @@ func (a *Aggregate) UpdateExtractor() {
 	if constructor == nil {
 		panic(&AggregateDefinitionError{"unsupported type"})
 	}
-	extraction := constructor(a.Args)
+
+	extraction := constructor(a.Id, a.Args)
 	a.Extractor = extraction
+	for _, d := range extraction.Dependencies() {
+		a.dependencies = append(a.dependencies, d)
+	}
+
 	/*switch aggregate.Type {
 	case "http":
 		aggregate.applyHttpExtractor()
@@ -71,7 +76,7 @@ func (a *Aggregate) UpdateExtractor() {
 }
 
 // applies a static extractor to the aggregate
-func (a *Aggregate) applyStaticExtractor() {
+/*func (a *Aggregate) applyStaticExtractor() {
 	value, ok := a.Args.(string)
 	if !ok {
 		panicParameterError(a.Id, "static")
@@ -81,11 +86,11 @@ func (a *Aggregate) applyStaticExtractor() {
 		Value: value,
 	}
 
-	a.Extractor = extractor
-}
+	//a.Extractor = extractor
+}*/
 
 // applies an HTTP Extractor to the given aggregate
-func (aggregate *Aggregate) applyHttpExtractor() {
+/*func (aggregate *Aggregate) applyHttpExtractor() {
 	parameters, ok := aggregate.Args.(map[interface{}]interface{})
 	if !ok {
 		panicParameterError(aggregate.Id, "http")
@@ -95,33 +100,13 @@ func (aggregate *Aggregate) applyHttpExtractor() {
 		Url: parameters["url"].(string),
 	}
 
-	aggregate.Extractor = extractor
-}
+	//aggregate.Extractor = extractor
+}*/
 
-func (a *Aggregate) applyAggregateExtractor() {
-	parameters, ok := a.Args.([]interface{})
-	if !ok {
-		panicParameterError(a.Id, "aggregate")
-	}
-
-	var extractor extraction.AggregateExtraction
-	for _, sub := range parameters {
-		typedSub, ok := sub.(string)
-		if !ok {
-			panicParameterError(a.Id, "aggregate")
-		}
-		extractor.Ids = append(extractor.Ids, typedSub)
-		a.dependencies = append(a.dependencies, typedSub)
-	}
-
-	a.Extractor = extractor
-	log.WithField("count", len(a.dependencies)).Debug("Dependencies added.")
-}
-
-func (a *Aggregate) applyAutoExtractor() {
+/*func (a *Aggregate) applyAutoExtractor() {
 	extractor := extraction.AutoExtraction{a.Id}
 	a.Extractor = extractor
-}
+}*/
 
 // Executes the defined aggregation and returns the
 // aggregated (duh!) value.

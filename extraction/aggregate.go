@@ -24,3 +24,25 @@ func (e AggregateExtraction) Extract(valueCache map[string]string) string {
 	log.Debug(fmt.Sprintf("aggregate extraction := %s", value))
 	return value
 }
+
+func (e AggregateExtraction) Dependencies() []string {
+	return e.Ids
+}
+
+func createAggregateExtraction(id string, args interface{}) Extraction {
+	parameters, ok := args.([]interface{})
+	if !ok {
+		panicParameterError(id, "aggregate")
+	}
+
+	var extractor AggregateExtraction
+	for _, sub := range parameters {
+		typedSub, ok := sub.(string)
+		if !ok {
+			panicParameterError(id, "aggregate")
+		}
+		extractor.Ids = append(extractor.Ids, typedSub)
+	}	
+	
+	return extractor
+}
