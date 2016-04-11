@@ -28,6 +28,8 @@ func BuildAggregateFromDefinition(id string, i interface{}) Aggregate {
 		aggregate.Args = args
 	}
 
+	/*
+	TODO rework to list
 	untypedOp, ok := def["operation"]
 	if ok {
 		operation, ok := untypedOp.(string)
@@ -35,7 +37,7 @@ func BuildAggregateFromDefinition(id string, i interface{}) Aggregate {
 			panicAggregateError(id, "operation is not a string")
 		}
 		aggregate.OperationId = operation
-	}
+	}*/
 
 	return aggregate
 }

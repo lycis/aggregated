@@ -49,8 +49,14 @@ func (a Aggregate) Dependencies() []string {
 }
 
 // Sets Extractor function
-func (aggregate *Aggregate) UpdateExtractor() {
-	switch aggregate.Type {
+func (a *Aggregate) UpdateExtractor() {
+	constructor := extraction.Get(a.Type)
+	if constructor == nil {
+		panic(&AggregateDefinitionError{"unsupported type"})
+	}
+	extraction := constructor(a.Args)
+	a.Extractor = extraction
+	/*switch aggregate.Type {
 	case "http":
 		aggregate.applyHttpExtractor()
 	case "aggregate":
@@ -61,7 +67,7 @@ func (aggregate *Aggregate) UpdateExtractor() {
 		aggregate.applyStaticExtractor()
 	default:
 		panic(&AggregateDefinitionError{"unsupported type"})
-	}
+	}*/
 }
 
 // applies a static extractor to the aggregate
