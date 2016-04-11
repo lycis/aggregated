@@ -22,3 +22,11 @@ func (e AutoExtraction) Extract(valueCache map[string]string) string {
 	log.Debugf("auto := %s", value)
 	return value
 }
+
+func (e AutoExtraction) Dependencies() []string {
+	return nil
+}
+
+func createAutoExtraction(id string, args interface{}) Extraction {
+	return AutoExtraction{id}
+}

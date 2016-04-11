@@ -60,53 +60,7 @@ func (a *Aggregate) UpdateExtractor() {
 	for _, d := range extraction.Dependencies() {
 		a.dependencies = append(a.dependencies, d)
 	}
-
-	/*switch aggregate.Type {
-	case "http":
-		aggregate.applyHttpExtractor()
-	case "aggregate":
-		aggregate.applyAggregateExtractor()
-	case "auto":
-		aggregate.applyAutoExtractor()
-	case "static":
-		aggregate.applyStaticExtractor()
-	default:
-		panic(&AggregateDefinitionError{"unsupported type"})
-	}*/
 }
-
-// applies a static extractor to the aggregate
-/*func (a *Aggregate) applyStaticExtractor() {
-	value, ok := a.Args.(string)
-	if !ok {
-		panicParameterError(a.Id, "static")
-	}
-
-	extractor := extraction.StaticExtraction{
-		Value: value,
-	}
-
-	//a.Extractor = extractor
-}*/
-
-// applies an HTTP Extractor to the given aggregate
-/*func (aggregate *Aggregate) applyHttpExtractor() {
-	parameters, ok := aggregate.Args.(map[interface{}]interface{})
-	if !ok {
-		panicParameterError(aggregate.Id, "http")
-	}
-
-	extractor := extraction.HttpExtraction{
-		Url: parameters["url"].(string),
-	}
-
-	//aggregate.Extractor = extractor
-}*/
-
-/*func (a *Aggregate) applyAutoExtractor() {
-	extractor := extraction.AutoExtraction{a.Id}
-	a.Extractor = extractor
-}*/
 
 // Executes the defined aggregation and returns the
 // aggregated (duh!) value.

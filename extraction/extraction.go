@@ -7,24 +7,27 @@ import (
 func init() {
 	registeredExtractions = make(map[string]ExtractionConstructor)
 	Register("aggregate", createAggregateExtraction)
+	Register("static", createStaticExtraction)
+	Register("http", createHttpExtraction)
+	Register("auto", createAutoExtraction)
 }
 
 // General inerface for value extractions
 type Extraction interface {
 	// Executes the extraction and calculates its value
 	Extract(valueCache map[string]string) string
-	
+
 	// Returns a list of dependencies that are injected
 	// into the aggregate by this extraction.
 	Dependencies() []string
 }
 
-// A extraction constructor takes an interface as argument. 
+// A extraction constructor takes an interface as argument.
 // It has to be casted and checked by the constructor function and
 // return a Extraction instance.
 // Args are the values defined in the 'args' element of the aggregate
 // definition.
-type ExtractionConstructor func(id string, args interface{})Extraction
+type ExtractionConstructor func(id string, args interface{}) Extraction
 
 var registeredExtractions map[string]ExtractionConstructor
 
@@ -41,7 +44,7 @@ func Get(name string) ExtractionConstructor {
 	if !ok {
 		return nil
 	}
-	
+
 	return constructor
 }
 
