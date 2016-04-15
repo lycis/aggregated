@@ -5,23 +5,24 @@
 package operation
 
 import (
-
+	log "github.com/Sirupsen/logrus"
 )
 
-// Interface type that all Operations need to provide. 
+// Interface type that all Operations need to provide.
 type Operation interface {
 	// Executes the given Operation a a value and returns
 	// the result
 	Execute(value string) string
 }
 
-var operations map[string]Operation;
+var operations map[string]Operation
 
 func init() {
 	operations = make(map[string]Operation)
 }
 
 func Register(id string, op Operation) {
+	log.WithField("operation-id", id).Debug("Registered operation")
 	operations[id] = op
 }
 
@@ -30,7 +31,6 @@ func Get(id string) Operation {
 	if !ok {
 		return nil
 	}
-	
+
 	return op
 }
-
