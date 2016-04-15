@@ -15,22 +15,29 @@ type Operation interface {
 	Execute(value string) string
 }
 
-var operations map[string]Operation
+// This type describes a function that creates an Operation.
+// The passed args are directly mapped from the YAML definition
+// of the operation
+type OperationConstructor func(args interface{})Operation
+
+var operations map[string]OperationConstructor
 
 func init() {
-	operations = make(map[string]Operation)
+	operations = make(map[string]OperationConstructor)
 }
 
-func Register(id string, op Operation) {
+// Registers an operation. The method passed here as "op" has to 
+// construct an Operation in some kind.
+func Register(id string, op OperationConstructor) {
 	log.WithField("operation-id", id).Info("Registered operation")
 	operations[id] = op
 }
 
-func Get(id string) Operation {
+func Get(id string, args ...interface{}) Operation {
 	op, ok := operations[id]
 	if !ok {
 		return nil
 	}
 
-	return op
+	return op(args)
 }

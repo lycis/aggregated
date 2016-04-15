@@ -7,5 +7,5 @@ import (
 
 func init() {
 	log.WithField("operation-id", "string.reverse").Debug("Initialised")
-	operation.Register("string.reverse", StringReverse{})
+	operation.Register("string.reverse", NewStringReverse)
 }

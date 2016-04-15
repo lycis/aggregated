@@ -6,6 +6,10 @@
 //    abcd => dcba
 package strings
 
+import (
+	"github.com/lycis/aggregated/operation"
+)
+
 type StringReverse struct{}
 
 func (s StringReverse) Execute(in string) (out string) {
@@ -16,4 +20,8 @@ func (s StringReverse) Execute(in string) (out string) {
 
 	out = string(runes)
 	return
+}
+
+func NewStringReverse(args interface{}) operation.Operation {
+	return StringReverse{}
 }
