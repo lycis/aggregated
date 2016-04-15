@@ -26,7 +26,7 @@ func HandleGetAggregateValue(response http.ResponseWriter, request *http.Request
 	a := aggregate.GetAggregate(id)
 	if a == nil {
 		log.WithFields(log.Fields{
-			"client":         request.RemoteAddr,
+			"client":       request.RemoteAddr,
 			"aggregate-id": id,
 		}).Info("http: Requested undefined aggregate")
 		http.NotFound(response, request)
@@ -34,14 +34,14 @@ func HandleGetAggregateValue(response http.ResponseWriter, request *http.Request
 	}
 
 	log.WithFields(log.Fields{
-		"client":         request.RemoteAddr,
+		"client":       request.RemoteAddr,
 		"aggregate-id": a.Id,
 	}).Info("http: Aggregate value requested")
 
 	value, err := a.Value()
 	if err != nil {
 		log.WithFields(log.Fields{
-			"client":         request.RemoteAddr,
+			"client":       request.RemoteAddr,
 			"aggregate-id": a.Id,
 			"error":        err.Error(),
 		}).Error("Served error response")
@@ -57,7 +57,7 @@ func HandleGetAggregateValue(response http.ResponseWriter, request *http.Request
 	asJson, err := json.MarshalIndent(&v, "", "  ")
 	if err != nil {
 		log.WithFields(log.Fields{
-			"client":         request.RemoteAddr,
+			"client":       request.RemoteAddr,
 			"aggregate-id": a.Id,
 			"error":        err.Error(),
 		}).Error("Failed to marshal JSON response")
@@ -66,7 +66,7 @@ func HandleGetAggregateValue(response http.ResponseWriter, request *http.Request
 	}
 
 	log.WithFields(log.Fields{
-		"client":         request.RemoteAddr,
+		"client":       request.RemoteAddr,
 		"aggregate-id": a.Id,
 		"response":     string(asJson),
 	}).Info("JSON response served")
