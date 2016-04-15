@@ -22,7 +22,7 @@ func init() {
 }
 
 func Register(id string, op Operation) {
-	log.WithField("operation-id", id).Debug("Registered operation")
+	log.WithField("operation-id", id).Info("Registered operation")
 	operations[id] = op
 }
 

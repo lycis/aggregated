@@ -1,7 +1,12 @@
 package extraction
 
 import (
+	"github.com/lycis/aggregated/extraction"
 )
+
+func init() {
+	extraction.Register("static", createStaticExtraction)
+}
 
 // extraction for type 'static'
 type StaticExtraction struct {
@@ -17,15 +22,15 @@ func (e StaticExtraction) Dependencies() []string {
 	return nil
 }
 
-func createStaticExtraction(id string, args interface{}) Extraction {
+func createStaticExtraction(id string, args interface{}) extraction.Extraction {
 	value, ok := args.(string)
 	if !ok {
-		panicParameterError(id, "static")
+		extraction.PanicParameterError(id, "static")
 	}
 
 	extractor := StaticExtraction{
 		Value: value,
 	}
-	
+
 	return extractor
 }

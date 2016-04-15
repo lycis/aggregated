@@ -1,9 +1,14 @@
 package extraction
 
 import (
-	log "github.com/Sirupsen/logrus"
 	"fmt"
+	log "github.com/Sirupsen/logrus"
+	"github.com/lycis/aggregated/extraction"
 )
+
+func init() {
+	extraction.Register("aggregate", createAggregateExtraction)
+}
 
 // extraction for type 'aggregate'
 type AggregateExtraction struct {
@@ -29,20 +34,20 @@ func (e AggregateExtraction) Dependencies() []string {
 	return e.Ids
 }
 
-func createAggregateExtraction(id string, args interface{}) Extraction {
+func createAggregateExtraction(id string, args interface{}) extraction.Extraction {
 	parameters, ok := args.([]interface{})
 	if !ok {
-		panicParameterError(id, "aggregate")
+		extraction.PanicParameterError(id, "aggregate")
 	}
 
 	var extractor AggregateExtraction
 	for _, sub := range parameters {
 		typedSub, ok := sub.(string)
 		if !ok {
-			panicParameterError(id, "aggregate")
+			extraction.PanicParameterError(id, "aggregate")
 		}
 		extractor.Ids = append(extractor.Ids, typedSub)
-	}	
-	
+	}
+
 	return extractor
 }

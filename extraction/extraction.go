@@ -2,14 +2,11 @@ package extraction
 
 import (
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 )
 
 func init() {
 	registeredExtractions = make(map[string]ExtractionConstructor)
-	Register("aggregate", createAggregateExtraction)
-	Register("static", createStaticExtraction)
-	Register("http", createHttpExtraction)
-	Register("auto", createAutoExtraction)
 }
 
 // General inerface for value extractions
@@ -34,6 +31,7 @@ var registeredExtractions map[string]ExtractionConstructor
 // Registers a new Extraction type. Call this in your
 // init function.
 func Register(name string, constructor ExtractionConstructor) {
+	log.WithField("type", name).Info("Registered extraction")
 	registeredExtractions[name] = constructor
 }
 
@@ -56,6 +54,8 @@ func (e ParameterError) Error() string {
 	return e.Message
 }
 
-func panicParameterError(id, t string) {
+// Panics with an error that indicates that a parameter definition
+// of an Extraction type was violated
+func PanicParameterError(id, t string) {
 	panic(&ParameterError{fmt.Sprintf("%s: invalid definition of parameters for type '%s'", id, t)})
 }
