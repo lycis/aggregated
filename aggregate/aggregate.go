@@ -6,6 +6,7 @@ import (
 	"github.com/gyuho/goraph/graph"
 	"github.com/lycis/aggregated/configuration"
 	"github.com/lycis/aggregated/extraction"
+	"github.com/lycis/aggregated/operation"
 	"strings"
 )
 
@@ -64,7 +65,18 @@ func (a *Aggregate) UpdateExtractor() {
 
 // Executes the defined aggregation and returns the
 // aggregated (duh!) value.
-func (a Aggregate) Value() (string, error) {
+func (a Aggregate) Value() (value string, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			e, ok := r.(error)
+			if ok {
+				value = ""
+				err = e
+			} else {
+				panic(r)
+			}
+		}
+	}()
 
 	// get order of calls
 	dependencyGraph, err := a.calculateDependencyGraph()
@@ -79,27 +91,15 @@ func (a Aggregate) Value() (string, error) {
 		return "", AggregateEvaluationError{"loop in dependencies"}
 	}
 
-	// resolve dependency values
-	valueCache := make(map[string]string)
-	for _, id := range order {
-		dependency := GetAggregate(id)
-		if dependency == nil {
-			return "", AggregateEvaluationError{fmt.Sprintf("dependency '%s' not defined")}
-		}
-
-		v, err := dependency.Value()
-		if err != nil {
-			return "", err
-		}
-		log.WithFields(log.Fields{"aggregate-id": a.Id, "dependency-id": id, "value": v}).Info("Evaluated dependency value")
-
-		valueCache[id] = v
+	valueCache, err := a.resolveDependencyGraph(order)
+	if err != nil {
+		return "", err
 	}
 
-	value := a.Extractor.Extract(valueCache)
+	value = a.Extractor.Extract(valueCache)
 	log.WithFields(log.Fields{"aggregate-id": a.Id, "value": value}).Info("Evaluated own value")
 
-	// TODO apply operation
+	value = a.executeOperation(value)
 	return value, nil
 }
 
@@ -110,6 +110,52 @@ func (a Aggregate) calculateDependencyGraph() (graph.Graph, error) {
 	}
 
 	return dependencyGraph, nil
+}
+
+func (a Aggregate) resolveDependencyGraph(order []string) (map[string]string, error) {
+	// resolve dependency values
+	valueCache := make(map[string]string)
+	for _, id := range order {
+		dependency := GetAggregate(id)
+		if dependency == nil {
+			return nil, AggregateEvaluationError{fmt.Sprintf("dependency '%s' not defined")}
+		}
+
+		v, err := dependency.Value()
+		if err != nil {
+			return nil, err
+		}
+		log.WithFields(log.Fields{"aggregate-id": a.Id, "dependency-id": id, "value": v}).Info("Evaluated dependency value")
+
+		valueCache[id] = v
+	}
+	return valueCache, nil
+}
+
+func (a Aggregate) executeOperation(value string) string {
+	if a.OperationId == "" {
+		log.WithFields(log.Fields{"aggregate-id": a.Id}).Info("No operation.")
+		return value
+	}
+
+	log.WithFields(log.Fields{"aggregate-id": a.Id, "operation-id": a.OperationId, "value": value}).Info("Executing operation.")
+	op := operation.Get(a.OperationId)
+	if op == nil {
+		log.WithFields(log.Fields{
+			"aggregate-id": a.Id,
+			"operation-id": a.OperationId,
+		}).Error("Undefined operation")
+		panicEvalError(a.Id, "undefined operation %s", a.OperationId)
+	}
+
+	newVal := op.Execute(value)
+	log.WithFields(log.Fields{
+		"aggregate-id": a.Id,
+		"operation-id": a.OperationId,
+		"value-old":    value,
+		"value-new":    newVal,
+	}).Info("Operation executed")
+	return newVal
 }
 
 func addDependenciesToGraph(a Aggregate, g graph.Graph) error {

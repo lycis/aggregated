@@ -18,7 +18,7 @@ type AggregateValue struct {
 func HandleGetAggregateValue(response http.ResponseWriter, request *http.Request) {
 	id := request.URL.Path[1:]
 	if len(id) < 1 {
-		log.WithField("host", request.Host).Error("http: No aggregate id provided")
+		log.WithField("client", request.RemoteAddr).Error("http: No aggregate id provided")
 		http.Error(response, "no aggregate id provided", http.StatusBadRequest)
 		return
 	}
@@ -26,7 +26,7 @@ func HandleGetAggregateValue(response http.ResponseWriter, request *http.Request
 	a := aggregate.GetAggregate(id)
 	if a == nil {
 		log.WithFields(log.Fields{
-			"host":         request.Host,
+			"client":         request.RemoteAddr,
 			"aggregate-id": id,
 		}).Info("http: Requested undefined aggregate")
 		http.NotFound(response, request)
@@ -34,13 +34,19 @@ func HandleGetAggregateValue(response http.ResponseWriter, request *http.Request
 	}
 
 	log.WithFields(log.Fields{
-		"host":         request.Host,
+		"client":         request.RemoteAddr,
 		"aggregate-id": a.Id,
 	}).Info("http: Aggregate value requested")
 
 	value, err := a.Value()
 	if err != nil {
+		log.WithFields(log.Fields{
+			"client":         request.RemoteAddr,
+			"aggregate-id": a.Id,
+			"error":        err.Error(),
+		}).Error("Served error response")
 		http.Error(response, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	v := AggregateValue{
@@ -51,7 +57,7 @@ func HandleGetAggregateValue(response http.ResponseWriter, request *http.Request
 	asJson, err := json.MarshalIndent(&v, "", "  ")
 	if err != nil {
 		log.WithFields(log.Fields{
-			"host":         request.Host,
+			"client":         request.RemoteAddr,
 			"aggregate-id": a.Id,
 			"error":        err.Error(),
 		}).Error("Failed to marshal JSON response")
@@ -60,7 +66,7 @@ func HandleGetAggregateValue(response http.ResponseWriter, request *http.Request
 	}
 
 	log.WithFields(log.Fields{
-		"host":         request.Host,
+		"client":         request.RemoteAddr,
 		"aggregate-id": a.Id,
 		"response":     string(asJson),
 	}).Info("JSON response served")
