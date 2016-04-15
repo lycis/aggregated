@@ -28,6 +28,10 @@ func BuildAggregateFromDefinition(id string, i interface{}) Aggregate {
 		aggregate.Args = args
 	}
 
+    // TODO "operation" may be a
+    // * a single string (one operation, no args)
+    // * a map (one operation with args)
+    // * a list (multiple operations, evaluate each on their own)
 	untypedOp, ok := def["operation"]
 	if ok {
 		operation, ok := untypedOp.(string)
