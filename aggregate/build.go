@@ -40,6 +40,8 @@ func BuildAggregateFromDefinition(id string, i interface{}) Aggregate {
 		}
 		aggregate.OperationId = operation
 	}
+	
+	aggregate.Definition = def
 
 	return aggregate
 }

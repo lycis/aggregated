@@ -31,6 +31,10 @@ type Aggregate struct {
 	OperationId  string
 	Extractor    extraction.Extraction
 	dependencies []string
+	
+	// Complete definition from YAML - for fields that are
+	// not "default"
+	Definition   map[interface{}]interface{}
 }
 
 func (a Aggregate) Dependencies() []string {
