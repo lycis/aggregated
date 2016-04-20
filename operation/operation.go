@@ -6,13 +6,14 @@ package operation
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"github.com/lycis/aggregated/extraction"
 )
 
 // Interface type that all Operations need to provide.
 type Operation interface {
 	// Executes the given Operation a a value and returns
 	// the result
-	Execute(value string) string
+	Execute(value extraction.Value) extraction.Value
 }
 
 // This type describes a function that creates an Operation.

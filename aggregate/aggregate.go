@@ -103,7 +103,7 @@ func (a Aggregate) Value() (value extraction.Value, err error) {
 	value = a.Extractor.Extract(valueCache)
 	log.WithFields(log.Fields{"aggregate-id": a.Id, "value": value.String()}).Info("Evaluated own value")
 
-	//value = a.executeOperation(extractedValue.String())
+	value = a.executeOperation(value)
 	return value, nil
 }
 
@@ -136,7 +136,7 @@ func (a Aggregate) resolveDependencyGraph(order []string) (map[string]extraction
 	return valueCache, nil
 }
 
-func (a Aggregate) executeOperation(value string) string {
+func (a Aggregate) executeOperation(value extraction.Value) extraction.Value {
 	if a.OperationId == "" {
 		log.WithFields(log.Fields{"aggregate-id": a.Id}).Info("No operation.")
 		return value
