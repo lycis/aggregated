@@ -15,9 +15,9 @@ type HttpExtraction struct {
 	Url string
 }
 
-func (e HttpExtraction) Extract(valueCache map[string]string) string {
+func (e HttpExtraction) Extract(valueCache map[string]extraction.Value) extraction.Value {
 	log.Debug("http extraction")
-	return ""
+	return extraction.SingleValue{"http"}
 }
 
 func (e HttpExtraction) Dependencies() []string {

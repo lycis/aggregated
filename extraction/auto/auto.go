@@ -16,15 +16,15 @@ type AutoExtraction struct {
 	Id string
 }
 
-func (e AutoExtraction) Extract(valueCache map[string]string) string {
-	var value string
+func (e AutoExtraction) Extract(valueCache map[string]extraction.Value) extraction.Value {
+	var value extraction.MultiValue
 	for id, v := range valueCache {
 		if strings.HasPrefix(id, e.Id) {
 			log.WithField("dependency-id", id).Debug("Using dependency in auto extraction")
-			value += ", " + v
+			value.Add(v)
 		}
 	}
-	log.Debugf("auto := %s", value)
+	log.Debugf("auto := %s", value.String())
 	return value
 }
 

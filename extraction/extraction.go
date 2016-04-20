@@ -12,7 +12,7 @@ func init() {
 // General inerface for value extractions
 type Extraction interface {
 	// Executes the extraction and calculates its value
-	Extract(valueCache map[string]string) string
+	Extract(valueCache map[string]Value) Value
 
 	// Returns a list of dependencies that are injected
 	// into the aggregate by this extraction.

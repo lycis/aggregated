@@ -14,8 +14,8 @@ type StaticExtraction struct {
 	Value string
 }
 
-func (e StaticExtraction) Extract(valueCache map[string]string) string {
-	return e.Value
+func (e StaticExtraction) Extract(valueCache map[string]extraction.Value) extraction.Value {
+	return extraction.SingleValue{e.Value}
 }
 
 func (e StaticExtraction) Dependencies() []string {

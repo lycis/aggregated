@@ -16,14 +16,14 @@ type AggregateExtraction struct {
 	Ids []string
 }
 
-func (e AggregateExtraction) Extract(valueCache map[string]string) string {
-	var value string
+func (e AggregateExtraction) Extract(valueCache map[string]extraction.Value) extraction.Value {
+	var value extraction.MultiValue
 	for _, id := range e.Ids {
 		v, ok := valueCache[id]
 		if !ok {
 			log.WithField("error", fmt.Sprintf("dependency %s was not resolved", id)).Error("Failed to resolve value.")
 		} else {
-			value = fmt.Sprintf("%s, %s", value, v)
+			value.Add(v)
 		}
 	}
 	log.Debug(fmt.Sprintf("aggregate extraction := %s", value))

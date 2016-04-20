@@ -6,11 +6,12 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/lycis/aggregated/aggregate"
 	"net/http"
+	"github.com/lycis/aggregated/extraction"
 )
 
 type AggregateValue struct {
 	Name  string
-	Value string
+	Result extraction.Value
 }
 
 // This function is invoked for every HTTP request to get the value
@@ -51,7 +52,7 @@ func HandleGetAggregateValue(response http.ResponseWriter, request *http.Request
 
 	v := AggregateValue{
 		Name:  a.Name,
-		Value: value,
+		Result: value,
 	}
 
 	asJson, err := json.MarshalIndent(&v, "", "  ")

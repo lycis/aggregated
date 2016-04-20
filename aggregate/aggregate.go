@@ -69,12 +69,12 @@ func (a *Aggregate) UpdateExtractor() {
 
 // Executes the defined aggregation and returns the
 // aggregated (duh!) value.
-func (a Aggregate) Value() (value string, err error) {
+func (a Aggregate) Value() (value extraction.Value, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			e, ok := r.(error)
 			if ok {
-				value = ""
+				value = extraction.SingleValue{""}
 				err = e
 			} else {
 				panic(r)
@@ -85,25 +85,25 @@ func (a Aggregate) Value() (value string, err error) {
 	// get order of calls
 	dependencyGraph, err := a.calculateDependencyGraph()
 	if err != nil {
-		return "", nil
+		return extraction.SingleValue{""}, nil
 	}
 
 	order, ok := graph.TopologicalSort(dependencyGraph)
 	log.WithField("ok", ok).Debug("Toplogical sort of dependency graph performed")
 	if !ok {
 		log.WithField("aggregate-id", a.Id).Error("Loop in dependencies detected.")
-		return "", AggregateEvaluationError{"loop in dependencies"}
+		return extraction.SingleValue{""}, AggregateEvaluationError{"loop in dependencies"}
 	}
 
 	valueCache, err := a.resolveDependencyGraph(order)
 	if err != nil {
-		return "", err
+		return extraction.SingleValue{""}, err
 	}
 
 	value = a.Extractor.Extract(valueCache)
-	log.WithFields(log.Fields{"aggregate-id": a.Id, "value": value}).Info("Evaluated own value")
+	log.WithFields(log.Fields{"aggregate-id": a.Id, "value": value.String()}).Info("Evaluated own value")
 
-	value = a.executeOperation(value)
+	//value = a.executeOperation(extractedValue.String())
 	return value, nil
 }
 
@@ -116,9 +116,9 @@ func (a Aggregate) calculateDependencyGraph() (graph.Graph, error) {
 	return dependencyGraph, nil
 }
 
-func (a Aggregate) resolveDependencyGraph(order []string) (map[string]string, error) {
+func (a Aggregate) resolveDependencyGraph(order []string) (map[string]extraction.Value, error) {
 	// resolve dependency values
-	valueCache := make(map[string]string)
+	valueCache := make(map[string]extraction.Value)
 	for _, id := range order {
 		dependency := GetAggregate(id)
 		if dependency == nil {
