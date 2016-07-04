@@ -31,7 +31,7 @@ var registeredExtractions map[string]ExtractionConstructor
 // Registers a new Extraction type. Call this in your
 // init function.
 func Register(name string, constructor ExtractionConstructor) {
-	log.WithField("type", name).Info("Registered extraction")
+	log.WithField("type", name).Info("Registered type")
 	registeredExtractions[name] = constructor
 }
 
