@@ -1,9 +1,3 @@
-// Operation: string.reverse
-//
-// Returns the given value in reverted order.
-//
-// Example:
-//    abcd => dcba
 package strings
 
 import (
@@ -11,6 +5,12 @@ import (
 	"github.com/lycis/aggregated/operation"
 )
 
+// Operation: string.reverse
+//
+// Returns the given value in reverted order.
+//
+// Example:
+//    abcd => dcba
 type StringReverse struct{}
 
 func (s StringReverse) Execute(in extraction.Value) (extraction.Value) {
