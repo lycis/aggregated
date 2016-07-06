@@ -3,6 +3,7 @@ package extraction
 import (
 	"encoding/json"
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 )
 
 type Value interface {
@@ -31,4 +32,20 @@ func (v MultiValue) String() string {
 		return fmt.Sprintf("error: %s", e.Error())
 	}
 	return string(j)
+}
+
+func (v MultiValue) NestedArray() []interface{} {
+	log.WithField("values-cnt", len(v.Values)).Debug("Nesting values")
+	resultList := make([]interface{}, len(v.Values))
+	for i, subvalue := range v.Values {
+		log.WithField("value-num", i).Debug("Processing value")
+		if _, ok := subvalue.(SingleValue); ok {
+			log.WithField("value-num", i).Debug("single value")
+			resultList[i] = subvalue.String()
+		} else {
+			log.WithField("value-num", i).Debug("multi value")
+			resultList[i] = subvalue.(MultiValue).NestedArray()
+		}
+	}
+	return resultList
 }
