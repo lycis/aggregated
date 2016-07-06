@@ -28,19 +28,33 @@ func BuildAggregateFromDefinition(id string, i interface{}) Aggregate {
 		aggregate.Args = args
 	}
 
-    // TODO "operation" may be a
-    // * a single string (one operation, no args)
-    // * a map (one operation with args)
-    // * a list (multiple operations, evaluate each on their own)
+	// TODO "operation" may be a
+	// * a single string (one operation, no args)
+	// * a map (one operation with args)
+	// * a list (multiple operations, evaluate each on their own)
 	untypedOp, ok := def["operation"]
 	if ok {
 		operation, ok := untypedOp.(string)
 		if !ok {
-			panicAggregateError(id, "operation is not a string")
+			operation, ok := untypedOp.(map[interface{}]interface{})
+			if !ok {
+				panicAggregateError(id, "operation is not a string or map")
+			}
+
+			var oid string
+			for k := range operation {
+				oid = k.(string)
+				break
+			}
+
+			aggregate.OperationId = oid
+			aggregate.OperationArgs = operation[oid]
+		} else {
+			aggregate.OperationId = operation
+			aggregate.OperationArgs = nil
 		}
-		aggregate.OperationId = operation
 	}
-	
+
 	aggregate.Definition = def
 
 	return aggregate

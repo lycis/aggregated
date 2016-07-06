@@ -24,17 +24,18 @@ var loadedAggregates map[string]*Aggregate
 //       url: http://example.com/foobar
 //
 type Aggregate struct {
-	Id           string
-	Name         string
-	Type         string
-	Args         interface{}
-	OperationId  string
-	Extractor    extraction.Extraction
-	dependencies []string
-	
+	Id            string
+	Name          string
+	Type          string
+	Args          interface{}
+	OperationId   string
+	OperationArgs interface{}
+	Extractor     extraction.Extraction
+	dependencies  []string
+
 	// Complete definition from YAML - for fields that are
 	// not "default"
-	Definition   map[interface{}]interface{}
+	Definition map[interface{}]interface{}
 }
 
 func (a Aggregate) Dependencies() []string {
@@ -142,8 +143,8 @@ func (a Aggregate) executeOperation(value extraction.Value) extraction.Value {
 		return value
 	}
 
-	log.WithFields(log.Fields{"aggregate-id": a.Id, "operation-id": a.OperationId, "value": value}).Info("Executing operation.")
-	op := operation.Get(a.OperationId)
+	log.WithFields(log.Fields{"aggregate-id": a.Id, "value": value,  "operation-id": a.OperationId, "operation-args": a.OperationArgs}).Info("Executing operation.")
+	op := operation.Get(a.OperationId, a.OperationArgs)
 	if op == nil {
 		log.WithFields(log.Fields{
 			"aggregate-id": a.Id,

@@ -10,6 +10,7 @@ import (
 	_ "github.com/lycis/aggregated/extraction/auto"
 	_ "github.com/lycis/aggregated/extraction/http"
 	_ "github.com/lycis/aggregated/extraction/static"
+	_ "github.com/lycis/aggregated/operation/general"
 	_ "github.com/lycis/aggregated/operation/math"
 	_ "github.com/lycis/aggregated/operation/strings"
 )

@@ -1,15 +1,15 @@
 package http
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
-	"fmt"
 )
 
 type ConnectionData struct {
-	Url string
+	Url     string
 	Headers []string
-	Method string
+	Method  string
 }
 
 func (c ConnectionData) eval() *http.Response {
@@ -18,7 +18,7 @@ func (c ConnectionData) eval() *http.Response {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	for _, h := range c.Headers {
 		header := strings.Split(h, ":")
 		if len(header) < 2 {
@@ -26,11 +26,32 @@ func (c ConnectionData) eval() *http.Response {
 		}
 		req.Header.Set(header[0], header[1])
 	}
-	
+
 	response, err := client.Do(req)
 	if err != nil {
 		panic(err)
 	}
-	
+
 	return response
+}
+
+func getConnectionDataFromArgs(args interface{}) (ConnectionData, bool) {
+	parameters, ok := args.(map[interface{}]interface{})
+	if !ok {
+		return ConnectionData{}, false
+	}
+
+	cd := ConnectionData{
+		Url: parameters["url"].(string),
+	}
+
+	if m, ok := parameters["method"]; ok {
+		cd.Method = m.(string)
+	}
+
+	if a, ok := parameters["auth"]; ok {
+		cd.Headers = append(cd.Headers, fmt.Sprintf("Authorization: %s", a.(string)))
+	}
+
+	return cd, true
 }

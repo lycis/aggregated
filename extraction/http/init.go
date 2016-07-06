@@ -6,4 +6,5 @@ import (
 
 func init() {
 	extraction.Register("http.status", createHttpStatusExtraction)
+	extraction.Register("http.content", createHttpContentExtraction)
 }

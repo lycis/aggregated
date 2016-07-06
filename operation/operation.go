@@ -34,7 +34,7 @@ func Register(id string, op OperationConstructor) {
 	operations[id] = op
 }
 
-func Get(id string, args ...interface{}) Operation {
+func Get(id string, args interface{}) Operation {
 	op, ok := operations[id]
 	if !ok {
 		return nil
